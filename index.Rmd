@@ -8,7 +8,6 @@ bibliography: data/references.bib
 *[Lab1](Lab1/lab1_AVVR.html)
 
 
-
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
 # REFERENCES
