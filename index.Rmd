@@ -5,8 +5,7 @@ date: "8/31/2020"
 output: html_document
 bibliography: data/references.bib
 ---
-* [Lab1](lab1_AVVR.html)
-
+*[Lab1](Lab1/lab1_AVVR.html)
 
 
 
