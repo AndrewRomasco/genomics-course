@@ -5,7 +5,9 @@ date: "8/31/2020"
 output: html_document
 bibliography: data/references.bib
 ---
-*[Lab1](Lab1/lab1_AVVR.html) 
+#Welcome to my website! Please feel free to look at my work below.
+
+*[Lab1](Lab1/lab1_AVVR.html)
 
 
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
