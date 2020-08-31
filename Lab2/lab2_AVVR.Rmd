@@ -1,0 +1,15 @@
+---
+title: "lab2_AVVR"
+author: "Andrew Romasco"
+date: "8/31/2020"
+output: html_document
+---
+
+##Hi there, this is the assignment for lab 2. I was directed by my professor to include the contents of lab 1 with a set of references. I believe that the link below should take you to lab1! Thank you.
+
+*[Lab1](Lab1/lab1_AVVR.html)
+
+
+Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
+
+# REFERENCES
