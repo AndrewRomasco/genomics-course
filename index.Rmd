@@ -11,6 +11,9 @@ bibliography: data/references.bib
 
 *[Lab2](Lab2/lab2_AVVR.html)
 
+*[Lab3](Lab3/lab3A_AVVR-Starting-with-Data.html)
+
+*[Lab3](Lab3/lab3B_AVRR-Manipulating-the-Data.html)
 
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 

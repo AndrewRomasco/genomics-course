@@ -1,0 +1,240 @@
+---
+title: "lab3B_AVRR-Manipulating the Data"
+author: "Andrew Romasco"
+date: "9/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+library("tidyverse")
+surveys <- read.csv("~/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course/data/portal_data_joined.csv")
+```
+
+## Selecting Columns
+
+```{r}
+#Select the 3 columns specified
+#select(surveys, plot_id, species_id, weight)
+#Select all but the columns specified
+#select(surveys, -record_id, -species_id)
+#To choose rows
+#filter(surveys, year == 1995)
+```
+
+## Pipes
+
+```{r}
+surveys2 <- filter(surveys, weight < 5)
+surveys_sml <- select(surveys2, species_id, sex, weight)
+# OR use pipelines
+surveys_sml <- surveys %>%
+  filter(weight < 5) %>%
+  select(species_id, sex, weight)
+
+# CHALLENGE
+surveys %>%
+  filter(year < 1995) %>%
+  select(year, sex, weight) %>%
+  head()
+
+## MUTATE
+surveys %>%
+  mutate(weight_kg = weight / 1000) %>%
+  head()
+#Can make multiple new columns in one mutate statement
+surveys %>%
+  mutate(weight_kg = weight / 1000,
+         weight_lb = weight_kg * 2.2) %>%
+  head()
+# So you only see the first few rows
+surveys %>%
+  mutate(weight_kg = weight / 1000) %>%
+  head()
+#Get rid of those NA's!
+surveys %>%
+  filter(!is.na(weight)) %>%
+  mutate(weight_kg = weight / 1000) %>%
+  head()
+
+#CHALLENGE
+surveys_hindfoot_cm <- surveys %>%
+    filter(!is.na(hindfoot_length)) %>%
+    mutate(hindfoot_cm = hindfoot_length / 10) %>%
+    filter(hindfoot_cm < 3) %>%
+    select(species_id, hindfoot_cm)
+```
+
+## Summarize and Group_by
+
+group_by() is often used together with summarize(), which collapses each group into a single-row summary of that group. group_by() takes as arguments the column names that contain the categorical variables for which you want to calculate the summary statistics. So to compute the mean weight by sex:
+
+```{r}
+surveys %>%
+  group_by(sex) %>%
+  summarize(mean_weight = mean(weight, na.rm = TRUE)) %>%
+  head()
+
+surveys %>%
+  group_by(sex, species_id) %>%
+  summarize(mean_weight = mean(weight, na.rm = TRUE)) %>% 
+  tail()
+
+surveys %>%
+  filter(!is.na(weight)) %>%
+  group_by(sex, species_id) %>%
+  summarize(mean_weight = mean(weight)) %>%
+  head()
+
+#Use print to see even more rows
+surveys %>%
+  filter(!is.na(weight)) %>%
+  group_by(sex, species_id) %>%
+  summarize(mean_weight = mean(weight)) %>%
+  print(n = 15)
+
+#Multiple summaries at the same time
+surveys %>%
+  filter(!is.na(weight)) %>%
+  group_by(sex, species_id) %>%
+  summarize(mean_weight = mean(weight),
+            min_weight = min(weight)) %>%
+  print(n = 15)
+#Multiple summaries sorted with arrange
+surveys %>%
+  filter(!is.na(weight)) %>%
+  group_by(sex, species_id) %>%
+  summarize(mean_weight = mean(weight),
+            min_weight = min(weight)) %>%
+  arrange(min_weight) %>%
+  print(n = 15)
+#Sorting by the mean weight but in descending order
+surveys %>%
+  filter(!is.na(weight)) %>%
+  group_by(sex, species_id) %>%
+  summarize(mean_weight = mean(weight),
+            min_weight = min(weight)) %>%
+  arrange(desc(mean_weight)) %>%
+  print(n = 15)
+```
+
+## Count
+```{r}
+#Count the number of rows for each sex
+surveys %>%
+    count(sex) 
+#It can even sort if you want that
+surveys %>%
+    count(sex, sort = TRUE) 
+#Counting a combination of factors
+surveys %>%
+  count(sex, species)  %>%
+  print(n = 15)
+#Now to organize our counts
+surveys %>%
+  count(sex, species) %>%
+  arrange(species, desc(n)) %>%
+  print(n = 15)
+
+#CHALLENGE 1
+surveys %>%
+    count(plot_type) 
+#CHALLENGE 2
+surveys %>%
+    filter(!is.na(hindfoot_length)) %>%
+    group_by(species_id) %>%
+    summarize(
+        mean_hindfoot_length = mean(hindfoot_length),
+        min_hindfoot_length = min(hindfoot_length),
+        max_hindfoot_length = max(hindfoot_length),
+        n = n()
+    )
+#CHALLENGE 3, and also arranged by year
+surveys %>%
+    filter(!is.na(weight)) %>%
+    group_by(year) %>%
+    filter(weight == max(weight)) %>%
+    select(year, genus, species, weight) %>%
+    arrange(year) %>%
+  print(n = 15)
+```
+
+## Spread
+
+Refer back to this function because it is amazing.
+
+```{r}
+surveys_gw <- surveys %>%
+  filter(!is.na(weight)) %>%
+  group_by(plot_id, genus) %>%
+  summarize(mean_weight = mean(weight))
+
+str(surveys_gw)
+
+#Spread out the genus column into a new column for each genus. Then set the mean weights as the rows.
+surveys_spread <- surveys_gw %>%
+  spread(key = genus, value = mean_weight)
+
+str(surveys_spread)
+
+surveys_gw %>%
+  spread(genus, mean_weight, fill = 0) %>%
+  head()
+```
+
+## Gather
+
+The opposite of spread
+
+```{r}
+#CHALLENGE 1
+surveys_spread_genera <- surveys %>%
+  group_by(plot_id, year) %>%
+  summarize(n_genera = n_distinct(genus)) %>%
+  spread(year, n_genera)
+#the surveys data frame with year as columns, plot_id as rows, and the number of genera per plot as the values
+surveys_spread_genera
+
+#CHALLENGE 2
+surveys_spread_genera %>%
+  gather("year", "n_genera", -plot_id) %>%
+  print(n = 15)
+
+#CHALLENGE 3
+surveys_long <- surveys %>%
+  gather("measurement", "value", hindfoot_length, weight)
+
+#CHALLENGE 4
+surveys_long %>%
+  group_by(year, measurement, plot_type) %>%
+  summarize(mean_value = mean(value, na.rm=TRUE)) %>%
+  spread(measurement, mean_value) %>%
+  print(n = 15)
+```
+
+## Exporting Data
+
+```{r}
+surveys_complete <- surveys %>%
+  filter(!is.na(weight),           # remove missing weight
+         !is.na(hindfoot_length),  # remove missing hindfoot_length
+         !is.na(sex))                # remove missing sex
+
+## Extract the most common species_id
+species_counts <- surveys_complete %>%
+    count(species_id) %>% 
+    filter(n >= 50)
+
+## Only keep the most common species
+surveys_complete <- surveys_complete %>%
+  filter(species_id %in% species_counts$species_id)
+
+dim(surveys_complete)
+
+#Saving the data
+write_csv(surveys_complete, path = "~/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course/data/surveys_complete.csv")
+```
+

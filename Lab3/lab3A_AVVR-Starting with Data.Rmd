@@ -1,0 +1,129 @@
+---
+title: "Lab3-Data Wrangling"
+author: "Andrew Romasco"
+date: "9/7/2020"
+output: html_document
+---
+
+## Set-up
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, eval=FALSE}
+download.file(url="https://ndownloader.figshare.com/files/2292169",
+              destfile = "data/portal_data_joined.csv")
+```
+
+## Viewing Data Challenge
+
+```{r}
+setwd("~/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course")
+surveys <- read.csv("data/portal_data_joined.csv")
+head(surveys)
+str(surveys)
+View(surveys)
+```
+
+What is the class of the object surveys?
+  "surveys" is a data frame.
+How many rows and how many columns are in this object?
+  There are 13 columns and 34,786 rows. The observations in the structure output of surveys are the rows and the variables in the structure output are the columns.
+How many species have been recorded during these surveys?
+  There are 48 different species which have been recorded in these interviews as identified by the species_id variable.
+
+## Indexing and Subsetting Challenge
+
+```{r}
+head_surveys <- surveys[1:6, ]
+head_surveys <- surveys[-(7:34786), ] # Equivalent to head(surveys)
+
+surveys_200 <- data.frame(surveys[200,])
+num <- nrow(surveys)
+surveys_last <- surveys[num,]
+surveys_middle <- surveys[num/2,]
+surveys_head <- surveys[-(7:num), ]
+```
+
+## Factors
+
+```{r}
+sex <- factor(c("male", "female", "female", "male"))
+levels(sex)
+nlevels(sex)
+sex <- factor(sex, levels = c("male", "female"))
+sex
+as.character(sex)
+
+year_fct <- factor(c(1990, 1983, 1977, 1998, 1990))
+as.numeric(year_fct)               # Wrong! And there is no warning...
+as.numeric(as.character(year_fct)) # Works...
+as.numeric(levels(year_fct))[year_fct]
+
+plot(as.factor(surveys$sex))
+levels(sex)[1] <- "undetermined"
+levels(sex)
+
+#Challenge
+levels(sex)[2:3] <- c("female", "male")
+sex <- factor(sex, levels = c("female", "male", "undetermined"))
+plot(sex)
+
+```
+
+## StringsAsFactors 
+
+```{r}
+setwd("~/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course")
+## Compare the difference between our data read as `factor` vs `character`.
+surveys <- read.csv("data/portal_data_joined.csv", stringsAsFactors = TRUE)
+str(surveys)
+surveys <- read.csv("data/portal_data_joined.csv", stringsAsFactors = FALSE)
+str(surveys)
+## Convert the column "plot_type" into a factor
+surveys$plot_type <- factor(surveys$plot_type)
+
+#Challenge 1
+animal_data <- data.frame(
+          animal = c("dog", "cat", "sea cucumber", "sea urchin"),
+          feel = c("furry", "silky", "squishy", "spiny"),
+          weight = c(45, 8, 1.1, 0.8)
+          )
+#Challenge 2
+country_climate <- data.frame(
+       country = c("Canada", "Panama", "South Africa", "Australia"),
+       climate = c("cold", "hot", "temperate", "hot/temperate"),
+       temperature = c(10, 30, 18, 15),
+       northern_hemisphere = c(TRUE, TRUE, FALSE, FALSE),
+       has_kangaroo = c(FALSE, FALSE, FALSE, TRUE)
+       )
+```
+
+1.) Are they what you expected? Why? Why not?
+  They are what I was expecting, as I have used R in the past before. Something which might be confusing is that the countries are considered factors.
+  
+2.) What would have been different if we had added stringsAsFactors = FALSE when creating the data frame?
+  If we had done that then the country and climate variables would be considered a vector of strings and not factors.
+
+3.) What would you need to change to ensure that each column had the accurate data type?
+  To ensure that each column has the accurate data type I would suggest checking the data type using structure and then changing the type if necesary.
+  
+## Formatting Dates
+
+```{r}
+library("lubridate")
+my_date <- ymd("2015-01-01")
+str(my_date)
+# sep indicates the character to use to separate each component
+my_date <- ymd(paste("2015", "1", "1", sep = "-")) 
+str(my_date)
+surveys$date <- ymd(paste(surveys$year, surveys$month, surveys$day, sep = "-"))
+summary(surveys$date)
+
+missing_dates <- surveys[is.na(surveys$date), c("year", "month", "day")]
+head(missing_dates)
+
+```
+
+These dates failed to parse because they do not exist; that is, there is no 31st day in September or any of the other months listed. If I had to use these data for my analyses, I would begin by asking who had collected teh data and how it had been collected. That would allow me to make more accurate decisions going forward, however it may be necesary to eliminate the data from the data set if there is no reason for the incorrectly collected data.
