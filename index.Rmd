@@ -16,9 +16,9 @@ Welcome to my website! Please feel free to look at my work below.
 
 *[Lab3B: Manipulating Data](Lab3/lab3B_AVRR-Manipulating-the-Data.html)
 
-*[Lab4A: Data Wrangling](Lab4A/lab4A_AVVR_Data_Wrangling.html)
+*[Lab4A: Data Wrangling](Lab4/lab4A_AVVR_Data_Wrangling.html)
 
-*[Lab4B: Data Visualization w/ GGPlot](Lab4B/lab4B_AVVR_Data_Visualization_with_GGPlot.html)
+*[Lab4B: Data Visualization w/ GGPlot](Lab4/lab4B_AVVR_Data_Visualization_with_GGPlot.html)
 
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
