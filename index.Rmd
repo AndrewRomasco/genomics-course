@@ -20,6 +20,8 @@ Welcome to my website! Please feel free to look at my work below.
 
 *[Lab5: Data Visualization w/ GGPlot](Lab5/lab5_AVVR_Data_Visualization_with_GGPlot.html)
 
+*[Lab5: COVID19 Data Visualization](Lab5/lab5_AVVR_COVID_Visualization.html)
+
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
 # REFERENCES
