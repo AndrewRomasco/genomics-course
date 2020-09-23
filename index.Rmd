@@ -1,0 +1,27 @@
+---
+title: "index"
+author: "Andrew Romasco"
+date: "8/31/2020"
+output: html_document
+bibliography: data/references.bib
+---
+
+Welcome to my website! Please feel free to look at my work below.
+
+*[Lab1](Lab1/lab1_AVVR.html)
+
+*[Lab2](Lab2/lab2_AVVR.html)
+
+*[Lab3A: Starting with Data](Lab3/lab3A_AVVR-Starting-with-Data.html)
+
+*[Lab3B: Manipulating Data](Lab3/lab3B_AVRR-Manipulating-the-Data.html)
+
+*[Lab4: Data Wrangling](Lab4/lab4_AVVR_Data_Wrangling.html)
+
+*[Lab5: Data Visualization w/ GGPlot](Lab5/lab5_AVVR_Data_Visualization_with_GGPlot.html)
+
+*[Lab5: COVID19 Data Visualization](Lab5/lab5_AVVR_COVID_Visualization.html)
+
+Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
+
+# REFERENCES

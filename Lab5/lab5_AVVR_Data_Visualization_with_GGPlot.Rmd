@@ -1,0 +1,253 @@
+---
+title: "lab5_AVVR_Data_Visualization_with_GGPlot"
+author: "Andrew Romasco"
+date: "9/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+
+```{r Loading Data}
+library("tidyverse")
+setwd("~/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course")
+surveys_complete <- read_csv("data/surveys_complete.csv")
+```
+
+```{r}
+ggplot(data = surveys_complete, aes(x = weight, y = hindfoot_length)) +
+  geom_point()
+
+## Or we could assign the plot by doing this...
+surveys_plot <- ggplot(data = surveys_complete, 
+                      mapping = aes(x = weight, y = hindfoot_length))
+## Then graph the plot like this
+#surveys_plot + 
+#    geom_point()
+```
+
+## Hex Bin Challenge
+```{r Hex Bin Challenge}
+library("hexbin")
+surveys_plot +
+ geom_hex()
+
+```
+
+```{r Other options}
+#Aplha adds transparency, color can hange the color
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) +
+    geom_point(alpha = 0.1, color = "blue")
+
+#Can even use other variables in the graph
+ggplot(data = surveys_complete, mapping = aes(x = weight, y = hindfoot_length)) +
+    geom_point(alpha = 0.1, aes(color = species_id))
+
+#Or use a boxplot
+ggplot(data = surveys_complete, 
+       mapping = aes(x = species_id, y = weight)) +
+   geom_point(aes(color = plot_type))
+```
+
+```{r Box Plots}
+#Jitter prevents points from overlapping
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = weight)) +
+    geom_boxplot(alpha = 0) +
+    geom_jitter(alpha = 0.3, color = "tomato")
+
+```
+
+## Challenge Box Plot
+```{r}
+# With some added bits to make it look even better!
+ggplot(data = surveys_complete, mapping = aes(x = species_id, y = hindfoot_length)) +
+  aes(color = factor(plot_id)) +
+  geom_violin(alpha = 0) +
+  geom_jitter(alpha = 0.3) +
+  scale_y_log10()
+```
+
+## Plotting Time Series Data
+
+```{r Time Series}
+yearly_counts <- surveys_complete %>%
+  count(year, genus)
+
+ggplot(data = yearly_counts, aes(x = year, y = n)) +
+     geom_line()
+
+ggplot(data = yearly_counts, aes(x = year, y = n, group = genus)) +
+    geom_line()
+
+#Gives labels to the plot data points
+ggplot(data = yearly_counts, aes(x = year, y = n, color = genus)) +
+    geom_line()
+
+yearly_counts %>% 
+    ggplot(mapping = aes(x = year, y = n, color = genus)) +
+    geom_line()
+
+yearly_counts_graph <- surveys_complete %>%
+    count(year, genus) %>% 
+    ggplot(mapping = aes(x = year, y = n, color = genus)) +
+    geom_line()
+
+yearly_counts_graph
+
+```
+
+```{r Faceting}
+ggplot(data = yearly_counts, aes(x = year, y = n)) +
+    geom_line() +
+    facet_wrap(facets = vars(genus))
+
+yearly_sex_counts <- surveys_complete %>%
+                      count(year, genus, sex)
+
+ggplot(data = yearly_sex_counts, mapping = aes(x = year, y = n, color = sex)) +
+  geom_line() +
+  facet_wrap(facets =  vars(genus))
+
+#Facet by sex and genus
+ggplot(data = yearly_sex_counts, 
+       mapping = aes(x = year, y = n, color = sex)) +
+  geom_line() +
+  facet_grid(rows = vars(sex), cols =  vars(genus))
+
+# One column, facet by rows
+ggplot(data = yearly_sex_counts, 
+       mapping = aes(x = year, y = n, color = sex)) +
+  geom_line() +
+  facet_grid(rows = vars(genus))
+
+# One row, facet by column
+ggplot(data = yearly_sex_counts, 
+       mapping = aes(x = year, y = n, color = sex)) +
+  geom_line() +
+  facet_grid(cols = vars(genus))
+
+```
+
+```{r Themes}
+ggplot(data = yearly_sex_counts, 
+        mapping = aes(x = year, y = n, color = sex)) +
+     geom_line() +
+     facet_wrap(vars(genus)) +
+     theme_bw()
+
+yearly_weight <- surveys_complete %>%
+                group_by(year, species_id) %>%
+                 summarize(avg_weight = mean(weight))
+
+ggplot(data = yearly_weight, mapping = aes(x=year, y=avg_weight)) +
+   geom_line() +
+   facet_wrap(vars(species_id)) +
+   theme_bw()
+
+#Even better graph!
+ggplot(data = yearly_sex_counts, aes(x = year, y = n, color = sex)) +
+    geom_line() +
+    facet_wrap(vars(genus)) +
+    labs(title = "Observed genera through time",
+         x = "Year of observation",
+         y = "Number of individuals") +
+    theme_bw()
+
+#MUCH more customization, which is great
+ggplot(data = yearly_sex_counts, mapping = aes(x = year, y = n, color = sex)) +
+    geom_line() +
+    facet_wrap(vars(genus)) +
+    labs(title = "Observed genera through time",
+        x = "Year of observation",
+        y = "Number of individuals") +
+    theme_bw() +
+    theme(text=element_text(size = 16))
+```
+
+```{r Super fancy italicized font graph}
+ggplot(data = yearly_sex_counts, mapping = aes(x = year, y = n, color = sex)) +
+    geom_line() +
+    facet_wrap(vars(genus)) +
+    labs(title = "Observed genera through time",
+        x = "Year of observation",
+        y = "Number of individuals") +
+    theme_bw() +
+    theme(axis.text.x = element_text(colour = "grey20", size = 12, angle = 90, hjust = 0.5, vjust = 0.5),
+                        axis.text.y = element_text(colour = "grey20", size = 12),
+                        strip.text = element_text(face = "italic"),
+                        text = element_text(size = 16))
+
+#You can even save themes for later use too!
+grey_theme <- theme(axis.text.x = element_text(colour="grey20", size = 12, 
+                                               angle = 90, hjust = 0.5, 
+                                               vjust = 0.5),
+                    axis.text.y = element_text(colour = "grey20", size = 12),
+                    text=element_text(size = 16))
+
+ggplot(surveys_complete, aes(x = species_id, y = hindfoot_length)) +
+    geom_boxplot() +
+    grey_theme
+```
+
+```{r Extra Pretty Graph}
+ggplot(surveys_complete, aes(x = species_id, y = hindfoot_length)) +
+    geom_boxplot(aes(color = species_id, )) +
+    labs(title = "Hindfoot Length of Species",
+        x = "Species ID",
+        y = "Hindfoot Length") +
+    theme(axis.text.x = element_text(colour = "grey20",
+                                     size = 10,
+                                     angle = 90,
+                                     hjust = 0.5,
+                                     vjust = 0.5),
+          legend.position = "none",
+          axis.text.y = element_text(colour = "grey20", size = 10),
+          strip.text = element_text(face = "italic"),
+          text = element_text(size = 15),
+          panel.background = element_rect(fill = "light green", colour = "dark green", size = 2, linetype = "solid"),
+          panel.grid.major = element_line(size = 0.5, linetype = 'solid', colour = "white"), panel.grid.minor = element_line(size = 0.25, linetype = 'solid', colour = "white"))
+```
+
+```{r Arranging and Exporting Plots}
+library(gridExtra)
+
+spp_weight_boxplot <- ggplot(data = surveys_complete, 
+                             aes(x = species_id, y = weight)) +
+  geom_boxplot() +
+  labs(x = "Species", 
+       y = expression(log[10](Weight))) +
+  scale_y_log10() + 
+  labs()
+
+spp_count_plot <- ggplot(data = yearly_counts, 
+                         aes(x = year, y = n, color = genus)) +
+  geom_line() + 
+  labs(x = "Year", y = "Abundance")
+
+grid.arrange(spp_weight_boxplot, spp_count_plot, ncol = 2, widths = c(4, 6))
+
+#Exporting Plots
+my_plot <- ggplot(data = yearly_sex_counts, 
+                  aes(x = year, y = n, color = sex)) +
+    geom_line() +
+    facet_wrap(vars(genus)) +
+    labs(title = "Observed genera through time",
+        x = "Year of observation",
+        y = "Number of individuals") +
+    theme_bw() +
+    theme(axis.text.x = element_text(colour = "grey20", size = 12, angle = 90,
+                                     hjust = 0.5, vjust = 0.5),
+          axis.text.y = element_text(colour = "grey20", size = 12),
+          text = element_text(size = 16))
+
+#ggsave("name_of_file.png", my_plot, width = 15, height = 10)
+
+## This also works for grid.arrange() plots
+combo_plot <- grid.arrange(spp_weight_boxplot, spp_count_plot, ncol = 2, 
+                           widths = c(4, 6))
+#ggsave("combo_plot_abun_weight.png", combo_plot, width = 10, dpi = 300)
+```
+
