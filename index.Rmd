@@ -6,8 +6,13 @@ output: html_document
 bibliography: data/references.bib
 ---
 
-Welcome to my website! Please feel free to look at my work below.
+## Welcome to my website! Please feel free to look at my work below.
 
+![](images/Friends at Beach.jpg)
+![](images/20190426_123701.jpg)
+![](images/IMG_2383.jpg)
+
+### Labs
 *[Lab1](Lab1/lab1_AVVR.html)
 
 *[Lab2](Lab2/lab2_AVVR.html)
