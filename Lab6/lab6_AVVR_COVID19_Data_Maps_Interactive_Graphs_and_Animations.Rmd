@@ -1,0 +1,337 @@
+---
+title: "Lab6: COVID19 Visualized via Data Maps and Interactive Graphs"
+author: "Andrew Romasco"
+date: "9/28/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE, tidy = TRUE) 
+```
+
+# Welcome!
+
+Welcome family and freinds to my report about how COVID-19 cases have spread throughout the world.
+
+In this report you should find a plethora of interesting, colorful, and hopefully helpful graphs to better understand and to see how COVID-19 is currently distributed around the world.
+
+### If you are interested...
+
+Below should be some useful links to look at if you are interested in learning more about how I was able to create these visualizations.
+
+1. [Maps in R using maps](https://cran.r-project.org/web/packages/maps/maps.pdf) by [Eric Anderson](http://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html)
+2. [geom_maps](https://ggplot2.tidyverse.org/reference/geom_map.html)
+3. [Drawing beautiful maps programmatically with R, sf and ggplot2](https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html)
+
+```{r Loading Packages, warmings=FALSE, message=FALSE}
+library(tidyverse)
+library(maps)
+library(mapdata)
+library(lubridate)
+library(viridis)
+library(wesanderson)
+```
+
+## Worldwide COVID Cases by region
+
+The below graph is a visualization of the COVID-19 reported cases as of April 2, 2020. As you can clearly see, cases are highest in the United States of America and significantly lower in all other countries. Thanks Donald Trump you orange oaf!
+
+```{r, warnings=FALSE, message=FALSE}
+daily_report <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
+  rename(Long = "Long_") 
+    
+ggplot(daily_report, aes(x = Long, y = Lat, size = Confirmed/1000)) +
+    borders("world", colour = NA, fill = "grey90") +
+    theme_bw() +
+    geom_point(shape = 21, color='purple', fill='purple', alpha = 0.5) +
+    labs(title = 'World COVID-19 Confirmed cases',x = '', y = '',
+        size="Cases (x1000))") +
+    theme(legend.position = "right") +
+    coord_fixed(ratio=1.5)
+```
+
+## US COVID cases just in the US
+
+On the last graph we could clearly tell that the US had the highest number of cases, but let's get a clearer breakdown. This graph can show you state by state how many confirmed cases were present in the US on that same day April 2, 2020. The East coast seems to be hit particularly hard.
+
+```{r, warnings=FALSE, message=FALSE}
+#To do this hawaii and Alaska were filtered out
+daily_report <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  filter(Country_Region == "US") %>% 
+  filter (!Province_State %in% c("Alaska","Hawaii", "American Samoa",
+                  "Puerto Rico","Northern Mariana Islands", 
+                  "Virgin Islands", "Recovered", "Guam", "Grand Princess",
+                  "District of Columbia", "Diamond Princess")) %>% 
+  filter(Lat > 0)
+ggplot(daily_report, aes(x = Long, y = Lat, size = Confirmed/10000)) +
+    borders("state", colour = "black", fill = "grey90") +
+    theme_bw() +
+    geom_point(shape = 21, color='red', fill='red', alpha = 0.3) +
+    labs(title = 'COVID-19 Confirmed Cases in the US', x = '', y = '',
+        size="Cases (x10000))") +
+    theme(legend.position = "right") +
+    coord_fixed(ratio=1.5)
+```
+
+## Cleaned up version
+
+Perhaps that last graph wasn't fancy enough for you, or it was too difficult to see which areas the coronavirus was concentrated in. This is a kind of heat map where you can clearly see that not only the East COast, but also much of the South of the United States stretching down to Texas also has particularly high cases. It's a good thing we decided to look at this another way!
+
+```{r, warnings=FALSE, message=FALSE}
+mybreaks <- c(1, 100, 1000, 10000, 100000, 1000000)
+ggplot(daily_report, aes(x = Long, y = Lat, size = Confirmed)) +
+    borders("state", colour = "white", fill = "pink") +
+    geom_point(aes(x=Long, y=Lat, size=Confirmed, color=Confirmed),stroke=F, alpha=0.7) +
+    scale_size_continuous(name="Cases", trans="log", range=c(1,7), 
+                        breaks=mybreaks, labels = c("1-99",
+                        "100-999", "1,000-9,999", "10,000-99,999", "100,000-1,000,000", "1,000,000+")) +
+    scale_color_viridis_c(option="viridis",name="Cases",
+                        trans="log", breaks=mybreaks, labels = c("1-99",
+                        "100-999", "1,000-9,999", "10,000-99,999", "100,000-1,000,000", "1,000,000+"))  +
+# Cleaning up the graph
+  
+  theme_void() + 
+    guides( colour = guide_legend()) +
+    labs(title = "Anisa Dhana's layout for COVID-19 Confirmed Cases in the US'") +
+    theme(
+      legend.position = "bottom",
+      text = element_text(color = "#22211d"),
+      plot.background = element_rect(fill = "#ffffff", color = NA), 
+      panel.background = element_rect(fill = "#ffffff", color = NA), 
+      legend.background = element_rect(fill = "#ffffff", color = NA)
+    ) +
+    coord_fixed(ratio=1.5)
+```
+
+### Mapping data to shapes
+
+Those last graphs seemed to span dates by region, but perhaps we want to know strictly a state by state number for case load. In the below graph, you can now see the same number of cases only broken down by state instead of county. It is here that we can most clearly see how many more cases New York has in comparison to the rest of the country.
+
+```{r, warnings=FALSE, message=FALSE}
+daily_report <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  filter(Country_Region == "US") %>% 
+  group_by(Province_State) %>% 
+  summarize(Confirmed = sum(Confirmed)) %>% 
+  mutate(Province_State = tolower(Province_State))
+# load the US map data
+us <- map_data("state")
+# We need to join the us map data with our daily report to make one data frame/tibble
+state_join <- left_join(us, daily_report, by = c("region" = "Province_State"))
+# plot state map
+ggplot(data = us, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+# Add data layer
+  geom_polygon(data = state_join, aes(fill = Confirmed), color = "black") +
+  scale_fill_gradientn(colours = 
+                         wes_palette("Zissou1", 100, type = "continuous"),
+                         trans = "log10") +
+  labs(title = "COVID-19 Confirmed Cases in the US'")
+```
+
+## Looking at Counties
+
+Now, let's break it down even further. Instead of just looking at blocked out states, let's take a look at the counties in those states. While it is certainly pretty to look at, this graph tells a rather difficult and overhwelming story of COVID cases.
+
+```{r}
+library(RColorBrewer)
+# To display only colorblind-friendly brewer palettes, specify the option colorblindFriendly = TRUE as follow:
+# display.brewer.all(colorblindFriendly = TRUE)
+# Get and format the covid report data
+report_03_27_2020 <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  unite(Key, Admin2, Province_State, sep = ".") %>% 
+  group_by(Key) %>% 
+  summarize(Confirmed = sum(Confirmed)) %>% 
+  mutate(Key = tolower(Key))
+# dim(report_03_27_2020)
+# get and format the map data
+us <- map_data("state")
+counties <- map_data("county") %>% 
+  unite(Key, subregion, region, sep = ".", remove = FALSE)
+# Join the 2 tibbles
+state_join <- left_join(counties, report_03_27_2020, by = c("Key"))
+# sum(is.na(state_join$Confirmed))
+ggplot(data = us, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  # Add data layer
+  borders("state", colour = "black") +
+  geom_polygon(data = state_join, aes(fill = Confirmed)) +
+  scale_fill_gradientn(colors = brewer.pal(n = 5, name = "PuRd"),
+                       breaks = c(1, 10, 100, 1000, 10000, 100000),
+                       trans = "log10", na.value = "White") +
+  ggtitle("Number of Confirmed Cases by US County") +
+  theme_bw() 
+```
+
+## Just looking at Masschusetts Counties
+
+Since I'm from MA, let's narrow this down and take a quick look at just the MA counties. As you can see from this graph, it appears that the areas around Boston were hit hardest. This should not come as a surprise to most of us, however teh fact that the county which Springfield is located in does seem quite interesting. I wonder why the cases in Springfield and the surrounding county are so low?
+
+```{r, warnings=FALSE, message=FALSE}
+daily_report <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/04-02-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  filter(Province_State == "Massachusetts") %>% 
+  group_by(Admin2) %>% 
+  summarize(Confirmed = sum(Confirmed)) %>% 
+  mutate(Admin2 = tolower(Admin2))
+us <- map_data("state")
+ma_us <- subset(us, region == "massachusetts")
+counties <- map_data("county")
+ma_county <- subset(counties, region == "massachusetts")
+state_join <- left_join(ma_county, daily_report, by = c("subregion" = "Admin2")) 
+# plot state map
+ggplot(data = ma_county, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+# Add data layer
+  geom_polygon(data = state_join, aes(fill = Confirmed), color = "white") +
+    scale_fill_gradientn(colors = brewer.pal(n = 5, name = "BuGn"),
+                         trans = "log10") +
+  labs(title = "COVID-19 Confirmed Cases in Massachusetts'")
+```
+
+## Interactive Graphs
+
+Let's take a closer look. Now you can use your mouse to get a detailed number of exactly how many cases are in each of the aforementioned counties. I've also tried out a new color scheme to differentiate the case counts more clearly. Green is a beautiful color, but this presents the situation a bit more clearly in my opinion.
+
+```{r, warnings=FALSE, message=FALSE}
+library(plotly)
+ggplotly(
+  ggplot(data = ma_county, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+# Add data layer
+  geom_polygon(data = state_join, aes(fill = Confirmed), color = "black") +
+    scale_fill_gradientn(colours = 
+                         wes_palette("Zissou1", 100, type = "continuous")) +
+  ggtitle("COVID-19 Cases in MA") +
+# Cleaning up the graph
+  labs(x=NULL, y=NULL) +
+  theme(panel.border = element_blank()) +
+  theme(panel.background = element_blank()) +
+  theme(axis.ticks = element_blank()) +
+  theme(axis.text = element_blank())
+)
+```
+
+## Excersises
+1. For the above graph "World COVID-19 Confirmed case" summarize the counts for each Country on the graph and update the graph to 9/26/2020. You may need to adjust the size of the points. 
+
+This is the state of the world as of September 27, only one days before I wrote this report. Sadly, the trends seem to be much the same as they were several months ago at least in relation to the US. Take note of the different scale on the side of the graph. The number of cases has only risen.
+
+```{r}
+daily_report_0927 <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-27-2020.csv")) %>% 
+  rename(Long = "Long_") 
+    
+ggplot(daily_report_0927, aes(x = Long, y = Lat, size = Confirmed/10000)) +
+    borders("world", colour = NA, fill = "light green") +
+    theme_bw() +
+    geom_point(shape = 21, color='red', fill='red', alpha = 0.5) +
+    labs(title = 'World COVID-19 Confirmed cases',x = '', y = '',
+        size="Cases (x10,000))") +
+    theme(legend.position = "right") +
+    coord_fixed(ratio=1.5)
+```
+
+2. Update Anisa Dhana's graph layout of the US to 9/27/2020. You may need to adjust the size of the points. 
+
+An updated version of the graph that we made from months prior, however I've made the decision to use the most recent date which is September 27th rather than the 26th. The below graph makes the number of COVID-19 cases seem almost overwhelming. Maybe the next graph can provide a more clear image...
+
+```{r}
+#Getting Data
+daily_report <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-27-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  filter(Country_Region == "US") %>% 
+  filter (!Province_State %in% c("Alaska","Hawaii", "American Samoa",
+                  "Puerto Rico","Northern Mariana Islands", 
+                  "Virgin Islands", "Recovered", "Guam", "Grand Princess",
+                  "District of Columbia", "Diamond Princess")) %>% 
+  filter(Lat > 0)
+#Plotting Graph
+mybreaks <- c(1, 1000, 10000, 100000, 1000000, 10000000)
+ggplot(daily_report, aes(x = Long, y = Lat, size = Confirmed)) +
+    borders("state", colour = "white", fill = "pink") +
+    geom_point(aes(x=Long, y=Lat, size=Confirmed, color=Confirmed),stroke=F, alpha=0.6) +
+    scale_size_continuous(name="Cases", trans="log", range=c(1,7), 
+                        breaks=mybreaks, labels = c("1-999", "1,000-9,999", "10,000-99,999", "100,000-999,999", "1,000,000-9,999,999", "10,000,000+")) +
+    scale_color_viridis_c(option="viridis",name="Cases",
+                        trans="log", breaks=mybreaks, labels = c("1-999", "1,000-9,999", "10,000-99,999", "100,000-999,999", "1,000,000-9,999,999", "10,000,000+"))  +
+# Cleaning up the graph
+  
+  theme_void() + 
+    guides( colour = guide_legend()) +
+    labs(title = "Anisa Dhana's layout for COVID-19 Confirmed Cases in the US'") +
+    theme(
+      legend.position = "bottom",
+      text = element_text(color = "#22211d"),
+      plot.background = element_rect(fill = "#ffffff", color = NA), 
+      panel.background = element_rect(fill = "#ffffff", color = NA), 
+      legend.background = element_rect(fill = "#ffffff", color = NA)
+    ) +
+    coord_fixed(ratio=1.5)
+```
+
+3. Update the above graph "Number of Confirmed Cases by US County" to 9/27/2020 and use a different color scheme or theme
+
+This is much better. We can now more clearly see the breakdown of cases by each state. We can also see that it is no longer just New York which is embroiled in cases. On the topic of New York, let's take an even closer look of how they were doing yesterday on the 27th of September.
+
+```{r}
+report_09_27_2020 <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-27-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  unite(Key, Admin2, Province_State, sep = ".") %>% 
+  group_by(Key) %>% 
+  summarize(Confirmed = sum(Confirmed)) %>% 
+  mutate(Key = tolower(Key))
+# dim(report_03_27_2020)
+# get and format the map data
+us <- map_data("state")
+counties <- map_data("county") %>% 
+  unite(Key, subregion, region, sep = ".", remove = FALSE)
+# Join the 2 tibbles
+state_join <- left_join(counties, report_09_27_2020, by = c("Key"))
+# sum(is.na(state_join$Confirmed))
+ggplot(data = us, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  # Add data layer
+  borders("state", colour = "black") +
+  geom_polygon(data = state_join, aes(fill = Confirmed)) +
+  scale_fill_gradientn(colors = brewer.pal(n = 5, name = "PuRd"),
+                       breaks = c(1, 10, 100, 1000, 10000, 100000),
+                       trans = "log10", na.value = "White") +
+  ggtitle("Number of Confirmed Cases by US County") +
+  theme_dark()
+```
+
+4. Make an interactive plot using a state of your chosing using a theme different from used in the above exammples.
+
+This graph provide an interactive and even more clear view than before. As you can see, New York is still very much struggling with a massive problem.
+
+```{r}
+daily_report_ex4 <-   read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-27-2020.csv")) %>% 
+  rename(Long = "Long_") %>% 
+  filter(Province_State == "New York") %>% 
+  group_by(Admin2) %>% 
+  summarize(Confirmed = sum(Confirmed)) %>% 
+  mutate(Admin2 = tolower(Admin2))
+us <- map_data("state")
+ny_us <- subset(us, region == "new york")
+counties <- map_data("county")
+ny_county <- subset(counties, region == "new york")
+state_join <- left_join(ny_county, daily_report_ex4, by = c("subregion" = "Admin2")) 
+# plot state map
+ggplotly(
+  ggplot(data = ny_county, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+# Add data layer
+  geom_polygon(data = state_join, aes(fill = Confirmed), color = "white") +
+    scale_fill_gradientn(colors = brewer.pal(n = 5, name = "Reds"),
+                         trans = "log10") +
+  labs(title = "COVID-19 Confirmed Cases in New York'") +
+  theme_light()
+)
+
+```
+
+5. Create a report with static maps and interactive graphs that is meant to be read by others (e.g. your friends and family). Hide warnings, messages and even the code you used so that it is readable. Include references. Link to the Lab 6 report from your Github site. Submit the link to Moodle.
+
+

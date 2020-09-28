@@ -24,6 +24,10 @@ Welcome to my website! Please feel free to look at my work below.
 
 *[Lab5x: Interactive Graphing! Animations too!](Lab5/lab5_AVRR_Interactive_Graphing.html)
 
+*[Lab6: Data Maps and Interactive Graphs](Lab6/lab6_AVVR_COVID19_Data_Maps_Interactive_Graphs_and_Animations.html)
+
+
+
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
 # REFERENCES
