@@ -334,4 +334,15 @@ ggplotly(
 
 5. Create a report with static maps and interactive graphs that is meant to be read by others (e.g. your friends and family). Hide warnings, messages and even the code you used so that it is readable. Include references. Link to the Lab 6 report from your Github site. Submit the link to Moodle.
 
+# REFRENCES
+
+R Core Team (2019). R: A language and environment for statistical computing. R
+  Foundation for Statistical Computing, Vienna, Austria. URL
+  https://www.R-project.org/.
+  
+Dong E, Du H, Gardner L. An interactive web-based dashboard to track COVID-19 in real
+  time. Lancet Inf Dis. 20(5):533-534. doi: 10.1016/S1473-3099(20)30120-1.
+  
+
+
 
