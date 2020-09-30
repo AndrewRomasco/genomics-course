@@ -3,6 +3,7 @@ title: "Lab6: COVID19 Visualized via Data Maps and Interactive Graphs"
 author: "Andrew Romasco"
 date: "9/28/2020"
 output: html_document
+bibliography: lab6_references.bib
 ---
 
 ```{r setup, include=FALSE} 
@@ -258,8 +259,15 @@ This is the state of the world as of September 27, only one days before I wrote 
 ```{r}
 daily_report_0927 <- read_csv(url("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/09-27-2020.csv")) %>% 
   rename(Long = "Long_") 
+
+
+NewData <- daily_report_0927 %>%
+  filter(Lat != "NA") %>% 
+  filter(Long != "NA") %>%
+  group_by(Country_Region) %>%
+  summarise(Confirmed = sum(Confirmed), Deaths = sum(Deaths), Lat = mean(Lat), Long = mean(Long))
     
-ggplot(daily_report_0927, aes(x = Long, y = Lat, size = Confirmed/10000)) +
+ggplot(NewData, aes(x = Long, y = Lat, size = Confirmed/10000)) +
     borders("world", colour = NA, fill = "light green") +
     theme_bw() +
     geom_point(shape = 21, color='red', fill='red', alpha = 0.5) +
