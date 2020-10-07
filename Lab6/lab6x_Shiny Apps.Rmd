@@ -1,0 +1,32 @@
+---
+title: 'lab6x: Shiny Apps'
+author: "Andrew Romasco"
+date: "10/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+## Lesson 1: App-1
+```{r}
+#install.packages("shiny")
+library(shiny)
+runExample("01_hello")
+
+```
+
+```{r How to run a shiny app}
+library(shiny)
+#runApp("name_of_directory")
+wd <- "C:/Users/27swi/OneDrive/Documents/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course/Lab6/App-1"
+runApp(wd, display.mode = "showcase")
+```
+
+## Lesson 2: Designing App from Scratch
+
+```{r}
+
+```
+

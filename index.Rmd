@@ -6,11 +6,16 @@ output: html_document
 bibliography: data/references.bib
 ---
 
+
 ## Welcome to my website! Please feel free to look at my work below.
 
-![](images/Friends at Beach.jpg)
-![](images/20190426_123701.jpg)
-![](images/IMG_2383.jpg)
+![](images/Friends at Beach.jpg){width=250px,height=100px}
+
+
+![](images/20190426_123701.jpg){width=250px,height=250px}
+
+
+![](images/IMG_2383.jpg){width=50px,height=50px}
 
 ### Labs
 *[Lab1](Lab1/lab1_AVVR.html)
