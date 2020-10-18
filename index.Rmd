@@ -36,6 +36,8 @@ bibliography: data/references.bib
 
 *[Lab6: Data Maps and Interactive Graphs](Lab6/lab6_AVVR_COVID19_Data_Maps_Interactive_Graphs_and_Animations.html)
 
+*[Lab7: Data Maps and Interactive Graphs](Lab7/Lab7: RNA-Seq workflow: gene-level exploratory analysis and differential expression.html)
+
 
 
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
