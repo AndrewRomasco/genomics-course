@@ -6,6 +6,8 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+#setTximetaBFC("C:\Users\27swi\OneDrive\Documents\R\win-library")
+#setTximetaBFC('C:\Users\27swi\AppData\Local\BiocFileCache\BiocFileCache\Cache')
 library("BiocStyle")
 library("knitr")
 library("rmarkdown")
@@ -49,6 +51,7 @@ coldata$files <- file.path(dir, "quants", coldata$names, "quant.sf.gz")
 file.exists(coldata$files)
 
 # tximeta will locate and download the relevant annotation data from various sources
+#install.packages("tximeta")
 library("tximeta")
 se <- tximeta(coldata)
 dim(se)
@@ -362,6 +365,7 @@ ggplot(geneCounts, aes(x = dex, y = count, color = cell)) +
 ```
 
 ```{r ggplotcountsgroup}
+#setwd("C:/Users/27swi/OneDrive/Documents/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course")
 ggplot(geneCounts, aes(x = dex, y = count, color = cell, group = cell)) +
   scale_y_log10() + geom_point(size = 3) + geom_line()
 ```

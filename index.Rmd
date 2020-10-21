@@ -38,7 +38,7 @@ bibliography: data/references.bib
 
 *[Lab7: Data Maps and Interactive Graphs](Lab7/Lab7: RNA-Seq workflow: gene-level exploratory analysis and differential expression.html)
 
-
+*[Lab8: Sequence Alignment, Phylogenetic Analysis and Tree Visualization](Lab8/Lab-8_-Sequence-Alignment,-Phylogenetic-Analysis-and-Tree-Visualization.html)
 
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
