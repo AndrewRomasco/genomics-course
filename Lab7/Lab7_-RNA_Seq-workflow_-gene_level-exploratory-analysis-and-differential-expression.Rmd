@@ -16,7 +16,7 @@ opts_chunk$set(message = FALSE, error = FALSE, warning = FALSE,
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r Install BioConductor, eval=FALSE, include=FALSE}
+```{r Install BioConductor, eval=FALSE, include=FALSE, }
 #Already ran this, DO NOT run again. It took a long time.
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
