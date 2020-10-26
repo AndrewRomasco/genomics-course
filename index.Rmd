@@ -40,6 +40,8 @@ bibliography: data/references.bib
 
 *[Lab8: Sequence Alignment, Phylogenetic Analysis and Tree Visualization](Lab8/Lab-8_-Sequence-Alignment,-Phylogenetic-Analysis-and-Tree-Visualization.html)
 
+*[Lab9: Regular Expressions in R](Lab9/Lab9-Programming-in-R---Regular-Expressions.html)
+
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
 # REFERENCES
