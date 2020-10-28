@@ -1,0 +1,241 @@
+---
+title: "Lab9x Control Structures"
+author: "Andrew Romasco"
+date: "10/28/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Commonly used control structures are
+
+- `if` and `else`: testing a condition and acting on it
+
+- `for`: execute a loop a fixed number of times 
+
+- `while`: execute a loop _while_ a condition is true 
+
+#### Example of If/Then statement
+
+```{r,prompt=FALSE}
+## Generate a uniform random number
+x <- runif(1, 0, 10)  
+if(x > 3) {
+        y <- 10
+} else {
+        y <- 0
+}
+```
+
+### Important Operators
+
+#### Comparison operators
+
+* `==` (equal)
+* `!=` (not equal)
+* `>` (greater than)
+* `>=` (greater than or equal)
+* `<` (less than)
+* `<=` (less than or equal)
+
+#### Logical operators
+		
+* `&` (and)
+* `|` (or) 
+* `!` (not)
+
+### `for` Loops
+
+For loops are pretty much the only looping construct that you will need in R. While you may occasionally find a need for other types of loops, in my experience doing data analysis, I've found very few situations where a for loop wasn't sufficient. 
+
+In R, for loops take an interator variable and assign it successive values from a sequence or vector. For loops are most commonly used for iterating over the elements of an object (list, vector, etc.)
+
+```{r}
+print("Let's count to 5!")
+for(i in 1:5) {
+        print(i)
+}
+```
+
+This loop takes the `i` variable and in each iteration of the loop gives it values 1, 2, 3, ..., 5, executes the code within the curly braces, and then the loop exits.
+
+The following three loops all have the same behavior.
+
+```{r}
+x <- c("my", "name", "is", "Andrew!")
+for(i in 1:4) {
+        ## Print out each element of 'x'
+        print(x[i])  
+}
+```
+
+The `seq_along()` function is commonly used in conjunction with for loops in order to generate an integer sequence based on the length of an object (in this case, the object `x`).
+
+```{r}
+## Generate a sequence based on length of 'x'
+for(i in seq_along(x)) {   
+        print(x[i])
+}
+
+# Very similiar to using the len() or nrwo() funciton however it applies to more things.
+```
+
+It is not necessary to use an index-type variable. 
+
+```{r}
+#Similiar to Python!!
+for(letter in x) {
+        print(letter)
+}
+```
+
+For one line loops, the curly braces are not strictly necessary.
+
+```{r}
+#Like a one-line example in Python. I still like the curly braces more though.
+for(i in 1:4) print(x[i])
+```
+
+### Nested `for` loops
+
+`for` loops can be nested inside of each other. I personally dislike nested for-loops.
+
+```{r}
+#print odss and then evens
+x <- matrix(1:6, 2, 3)
+for(i in seq_len(nrow(x))) {
+        for(j in seq_len(ncol(x))) {
+                print(x[i, j])
+        }   
+}
+```
+
+Nested loops are commonly needed for multidimensional or hierarchical data structures (e.g. matrices, lists). Be careful with nesting though. Nesting beyond 2 to 3 levels often makes it difficult to read/understand the code. If you find yourself in need of a large number of nested loops, you may want to break up the loops by using functions (discussed later).
+
+### `while` Loops
+
+While loops begin by testing a condition. If it is true, then they execute the loop body. Once the loop body is executed, the condition is tested again, and so forth, until the condition is false, after which the loop exits.
+
+```{r}
+#Count to 5!
+count <- 0
+while(count <= 5) {
+        print(count)
+        count <- count + 1
+}
+```
+
+```{r}
+#Flipping a coin!
+#Another example
+z <- 5
+set.seed(10)
+while(z >= 3 && z <= 10) {
+        coin <- rbinom(1, 1, 0.5)
+        
+        if(coin == 1) {  ## random walk
+                z <- z + 1
+        } else {
+                z <- z - 1
+        } 
+}
+print(z)
+```
+
+## Functions
+
+```{r,echo=FALSE}
+knitr::opts_chunk$set(comment = NA, prompt = TRUE, collapse = TRUE, error = TRUE)
+```
+
+Writing functions is a core activity of an R programmer. It represents the key step of the transition from a user of R to a developer who creates new functionality for R. While we are focusing on learning how to use R and it's package, it is helpful to understand the basics of functions. We have already been using them extensively. Functions are often used to encapsulate a sequence of expressions that need to be executed numerous times, perhaps under slightly different conditions. Functions are also often written when code must be shared with others or the public. 
+
+The writing of a function allows a developer to create an interface to the code, that is explicitly specified with a set of parameters. This interface provides an abstraction of the code to potential users. This abstraction simplifies the users' lives because it relieves them from having to know every detail of how the code operates. In addition, the creation of an interface allows the developer to communicate to the user the aspects of the code that are important or are most relevant.
+
+### Functions in R
+
+Functions in R are "first class objects", which means that they can be treated much like any other R object. Importantly,
+
+- Functions can be passed as arguments to other functions. This is very handy for the various apply functions, like `lapply()` and `sapply()` that we will learn below.
+
+- Functions can be nested, so that you can define a function inside of
+  another function
+
+### Your First Function
+
+Functions are defined using the `function()` directive and are stored
+as R objects just like anything else. In particular, they are R
+objects of class "function".
+
+Here's a simple function that takes no arguments and does nothing.
+
+```{r}
+f <- function() {
+        ## This is an empty function
+}
+## Functions have their own class
+class(f)  
+## Execute this function
+f()       
+```
+
+Let's make a function!
+
+```{r}
+f <- function() {
+        cat("Hello, class!\n Please remember to vote!")
+}
+f()
+```
+
+The last aspect of a basic function is the *function arguments*. These are the options that you can specify to the user that the user may explicity set. For this basic function, we can add an argument that determines how many times "Hello, world!" is printed to the console.
+
+```{r}
+f <- function(num) {
+        for(i in seq_len(num)) {
+                cat("Please vote written 5 times!\n")
+        }
+}
+f(5)
+```
+
+This next function returns the total number of characters printed to the console.
+
+```{r}
+f <- function(num) {
+        hello <- "Please vote like your life depends on it, because it does!\n"
+        for(i in seq_len(num)) {
+                cat(hello)
+                #print(hello)
+        }
+        chars <- nchar(hello) * num
+        chars
+}
+meaningoflife <- f(1)
+print(meaningoflife)
+```
+
+We can modify this behavior by setting a *default value* for the argument `num`. Any function argument can have a default value, if you wish to specify it. Sometimes, argument values are rarely modified (except in special cases) and it makes sense to set a default value for that argument. This relieves the user from having to specify the value of that argument every single time the function is called. 
+
+Here, for example, we could set the default value for `num` to be 1, so that if the function is called without the `num` argument being explicitly specified, then it will print "Hello, world!" to the console once.
+
+```{r}
+f <- function(num = 5) {
+        hello <- "Please vote!\n"
+        for(i in seq_len(num)) {
+                cat(hello)
+        }
+        chars <- nchar(hello) * num
+        chars
+}
+f()    ## Use default value for 'num'
+f(2)   ## Use user-specified value
+```
+
+## Looping on the Command Line using `apply` family in R base or `purrr` in Tidyverse
+
+Writing `for` and `while` loops is useful when programming but not particularly easy when working interactively on the command line.  The Apply family comprises: apply, lapply, sapply, vapply, mapply, rapply, and tapply. The Family of Apply functions pertains to the R base package, and is populated with functions to manipulate slices of data from matrices, arrays, lists and data frames in a repetitive way. In Tidyverse this functionality is covered by [purrr](https://purrr.tidyverse.org/). The `apply` and `purrr` functions in R are designed to avoid explicit use of loop constructs. They act on an input list, matrix or array, and apply a named function with one or several optional arguments. 
+
+## Please Vote!

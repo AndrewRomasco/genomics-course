@@ -7,7 +7,9 @@ bibliography: data/references.bib
 ---
 
 
-## Welcome to my website! Please feel free to look at my work below.
+## Please remember to *VOTE*
+
+If you are having trouble voting, or don't know if you are registered please use this link https://vote.gov/.
 
 ![](images/Friends at Beach.jpg){width=250px,height=100px}
 
@@ -41,6 +43,8 @@ bibliography: data/references.bib
 *[Lab8: Sequence Alignment, Phylogenetic Analysis and Tree Visualization](Lab8/Lab-8_-Sequence-Alignment,-Phylogenetic-Analysis-and-Tree-Visualization.html)
 
 *[Lab9: Regular Expressions in R](Lab9/Lab9-Programming-in-R---Regular-Expressions.html)
+
+*[Lab9x: Control Structures](Lab9/Lab9x-Control-Structures.html)
 
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
