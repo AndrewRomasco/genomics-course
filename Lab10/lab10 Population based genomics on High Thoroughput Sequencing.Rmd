@@ -1,0 +1,350 @@
+---
+title: 'lab10: Population based genomics on High Thoroughput Sequencing'
+author: "Andrew Romasco"
+date: "11/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+knitr::opts_chunk$set(fig.align = "center")
+library("knitr")
+
+```
+
+## Part I - Reading VCF data
+
+Genetic variation data is typically stored in [variant call format (VCF)](http://samtools.github.io/hts-specs/ "VCF format at hts-specs").
+This format is the preferred file format obtained from genome sequencing or high throughput genotyping.
+One advantage of using VCF files is that only variants (e.g., SNPs, indels, etc.) are reported which economizes files size relative to a format that may included invariant sites.
+Variant callers typically attempt to aggressively call variants with the perspective that a downstream quality control step will remove low quality variants.
+Note that VCF files come in different flavors and that each variant caller may report a slightly different information.
+A first step in working with this data is to understand their [contents](http://vcftools.sourceforge.net/VCF-poster.pdf).
+
+
+
+```{r}
+library(vcfR)
+data(vcfR_example)
+vcf
+```
+
+
+The function `library()` loads libraries, in this case the package *vcfR*.
+The function `data()` loads datasets that were included with R and its packages.
+Our usage of `data()` loads the objects 'gff', 'dna' and 'vcf' from the 'vcfR_example' dataset.
+Here we're only interested in the object 'vcf' which contains example VCF data.
+When we call the object name with no function it invokes the 'show' method which prints some summary information to the console.
+
+The below contains meta data
+
+```{r, echo=TRUE, tidy=TRUE}
+strwrap(vcf@meta[1:7])
+```
+
+```{r}
+#Compressed version
+queryMETA(vcf)
+
+#More specifc
+queryMETA(vcf, element = 'DP')
+
+#Even more specific
+queryMETA(vcf, element = 'FORMAT=<ID=DP')
+
+```
+
+### The fix region
+
+The fix region contains information for each variant which is sometimes summarized over all samples.
+The first eight columns of the fixed region are titled CHROM, POS, ID, REF, ALT, QUAL, FILTER and INFO.
+This is per variant information which is 'fixed', or the same, over all samples.
+The first two columns indicate the location of the variant by chromosome and position within that chromosome.
+Here, the ID field has not been used, so it consists of missing data (NA).
+The REF and ALT columns indicate the reference and alternate allelic states for a diploid sample.
+When multiple alternate allelic states are present they are delimited with commas.
+The QUAL column attempts to summarize the quality of each variant over all samples.
+The FILTER field is not used here but could contain information on whether a variant has passed some form of quality assessment.
+
+
+```{r, echo=TRUE}
+head(getFIX(vcf))
+```
+
+### The gt region
+
+
+The gt (genotype) region contains information about each variant for each sample.
+The values for each variant and each sample are colon delimited.
+Multiple types of data for each genotype may be stored in this manner.
+The format of the data is specified by the FORMAT column (column nine).
+Here we see that we have information for GT, AD, DP, GQ and PL.
+The definition of these acronyms can be referenced by querying the the meta region, as demonstrated previously.
+Every variant does not necessarily have the same information (e.g., SNPs and indels may be handled differently), so the rows are best treated independently.
+Different variant callers may include different information in this region.
+
+
+```{r, echo=TRUE, tidy=TRUE}
+vcf@gt[1:6, 1:4]
+```
+
+```{r}
+vcf <- read.vcfR("C:/Users/27swi/OneDrive/Documents/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course/data/pinfsc50_filtered.vcf.gz")
+head(vcf)
+```
+
+```{r, eval = FALSE}
+write.vcf(vcf, "myVCFdata_filtered.vcf.gz")
+```
+
+### Exercises Part I
+
+
+**1)** How would we find more information about `read.vcfR()`?
+
+```{r}
+#?read.vcfR
+```
+
+
+**2)** How would we learn what the acronym "AD" stands for?
+
+
+```{r}
+#queryMETA(vcf, element = 'AD')
+```
+
+
+**3)** We used the `head()` function to view the **first** few lines of `fix` data.
+How would we view the **last** few lines of `fix` data?
+
+
+```{r}
+#Just like head gives the beginning, tail gives the end
+
+#tail(vcf@fix)
+```
+
+**4)** There is a column in the `fix` portion of the data called `QUAL`.
+It is not defined in the `meta` portion of the data because it is defined in the [VCF specification](http://samtools.github.io/hts-specs/).
+It stands for 'quality'.
+Does `QUAL` appear useful to us? Why or why not?
+
+Yes! QUAL does seem to be useful as it tells us the quality of our samples. In the image below it is clear that the vast majority of samples have a relatively low quality.
+
+```{r}
+plot(vcf)
+# Alternate ggplot2 answer.
+library(ggplot2)
+qplot(getQUAL(vcf), geom = "histogram")
+```
+
+
+**5)** How would we query the sample names?
+
+```{r}
+colnames(vcf@gt)
+```
+
+## Part II - Analysis of Genome Data
+
+### Introduction
+
+Analysis of genome data for populations can be seen as similar to the analyses of other marker systems discussed in previous chapters of this book, except that genome data analyses include larger quantities of data. For example, VCF data (discussed in '[reading VCF data](reading_vcf.html)') can be read into R using *vcfR* to create a *vcfR* object. This object can be converted into a genlight object  and then a snpclone object if deemed necessary. Analysis on these objects has been covered in previous sections. Genome scale data provides additional analytical options as well. For example, when assumptions about the neutrality of the majority of the genome are appropriate, this can be used as a null hypothesis and used to help identify markers that differentiate from this assumption. Here we'll provide examples of how genomic data may be analyzed.
+
+```{r}
+library('vcfR')
+vcf <- read.vcfR("C:/Users/27swi/OneDrive/Documents/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course/data/pinfsc50_filtered.vcf.gz")
+# This data can also be download from the course repo - https://github.com/jeffreyblanchard/EvoGeno/blob/master/Grunwald/pinfsc50_filtered.vcf.gz
+```
+
+```{r}
+vcf
+```
+
+
+The `show` method reports that we have `r ncol(vcf@gt) - 1` samples and `r format(nrow(vcf@fix), big.mark = ",")` variants.
+If this matches our expectation then we can proceed.
+
+### Converting VCF data to a genlight object
+
+
+```{r}
+#install.packages("adegenet")
+x <- vcfR2genlight(vcf)
+x
+# vcfR
+gt <- extract.gt(vcf, element = "GT")
+gt[c(2,6,18), 1:3]
+# genlight
+t(as.matrix(x))[c(1,5,17), 1:3]
+
+library(adegenet)
+pop(x) <- as.factor(c("us", "eu", "us", "af", "eu", "us", "mx", "eu", "eu", "sa", "mx", "sa", "us", "sa", "Pmir", "us", "eu", "eu"))
+popNames(x)
+ploidy(x) <- 2
+```
+
+### Distance Matrix
+Let’s create a pairwise genetic distance matrix for individuals or populations (i.e., groups of individuals).
+
+To summarize, we can create a distance matrix from a genlight object using dist():
+
+```{r}
+x.dist <- dist(x)
+head(x.dist)
+```
+
+Note, that we have not specified what the variable x is. We can find documentation for this function with ?dist.
+
+There are also functions to create distance matrices from genlight objects that exist in other packages. The function bitwise.dist() in the package poppr is an example. We can find documentation for this function with ?poppr::bitwise.dist. Again, you need to know where to look for this information or you may not find it. We can use this function as follows.
+```{r}
+#install.packages("poppr")
+x.dist <- poppr::bitwise.dist(x)
+head(x.dist)
+```
+
+
+### chromR objects
+
+How to create a ChromR object!
+
+```{r}
+library(vcfR)
+
+# Find the files.
+vcf_file <- system.file("extdata", "pinf_sc50.vcf.gz", package = "pinfsc50")
+dna_file <- system.file("extdata", "pinf_sc50.fasta", package = "pinfsc50")
+gff_file <- system.file("extdata", "pinf_sc50.gff", package = "pinfsc50")
+
+# Input the files.
+vcf <- read.vcfR(vcf_file, verbose = FALSE)
+dna <- ape::read.dna(dna_file, format = "fasta")
+gff <- read.table(gff_file, sep="\t", quote="")
+
+# Create a chromR object.
+chrom <- create.chromR(name="Supercontig", vcf=vcf, seq=dna, ann=gff, verbose=TRUE)
+```
+
+Note that a warning message indicates that the names in all of the data sources do not match pefectly. It has been Professor Blanchard's experience that this is a frequent occurrence in genome projects. Instead of asking the user to create duplicate files that have the same data but standardized names, vcfR allows the user to exercise some judgement. If you see this message and feel the names are correct you can ignore this and proceed. In this case we see that a chromosome is named ‘Supercontig_1.50’ in the VCF data but named ‘Supercontig_1.50 of Phytophthora infestans T30-4’ in the FASTA (sequence) file. Because we know that for this specific project these are synonyms we can safely ignore the warning and proceed.
+
+```{r}
+#Let's look at our object now
+chrom
+
+#It's understandable that we have low quality
+#Also, we shouldn't expect to find any SNP
+plot(chrom)
+#displays the same information as the plot method only it distributes the data along its chomosomal coordinates. It also includes a representation of the annotation data.
+chromoqc(chrom, dp.alpha = 66)
+```
+#### Processing ChromR objects
+
+Lete's compare the old presentation to the new, cleaned up data!
+
+```{r}
+chrom <- proc.chromR(chrom, verbose = TRUE)
+plot(chrom)
+chromoqc(chrom, dp.alpha = 66)
+#Let's make a cleaned up version
+#vcf <- read.vcfR("pinfsc50_qc.vcf.gz", verbose = FALSE)
+vcf <- read.vcfR("C:/Users/27swi/OneDrive/Documents/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course/data/pinfsc50_filtered.vcf.gz", verbose = FALSE)
+chrom <- create.chromR(name="Supercontig", vcf=vcf, seq=dna, ann=gff, verbose=FALSE)
+chrom <- proc.chromR(chrom, verbose = FALSE)
+chromoqc(chrom, dp.alpha = 66)
+```
+
+#### Tabular summaries
+
+```{r}
+head(chrom@var.info)
+head(chrom@win.info)
+```
+
+While loading entire genomes into memory may not be practical due to resource limitations, it is frequently practical to break a genome up into fractions that can be processed given the resources available on any system. By processing a genome by chromosomes, or some other fraction, and saving this tabular data to file you can perform genome scans in an attempt to identify interesting features.
+
+
+### Genetic differentiation
+
+```{r}
+library(vcfR)
+data(vcfR_example)
+pop <- as.factor(c("us", "eu", "us", "af", "eu", "us", "mx", "eu", "eu", "sa", "mx", "sa", "us", "sa", "Pmir", "us", "eu", "eu"))
+myDiff <- genetic_diff(vcf, pops = pop, method = 'nei')
+knitr::kable(head(myDiff[,1:15]))
+#Let's look at the rest of the data
+knitr::kable(head(myDiff[,16:19]))
+
+#Let's summarize the data by taking averages
+knitr::kable(round(colMeans(myDiff[,c(3:9,16,19)], na.rm = TRUE), digits = 3))
+```
+
+Let's use some violin plots to view the data! Love violin plots because they are basically density and box plots combined. My favorite!
+
+```{r}
+library(reshape2)
+library(ggplot2)
+
+dpf <- melt(myDiff[,c(3:8,19)], varnames=c('Index', 'Sample'), value.name = 'Depth', na.rm=TRUE)
+```
+
+
+### Exercises Part II
+
+
+**1)** You actually have everything you need to make a Manhattan plot.
+Can you figure out how to plot $G'_{ST}$ (y-axis) by genomic position (POS)?
+
+```{r, fig.height=4}
+plot(getPOS(vcf), myDiff$Gprimest,  pch = 20, col = "#1E90FF44", xlab = "", ylab = "", ylim = c(0, 1), xaxt = "n")
+axis(side = 1, at = seq(0, 1e5, by = 1e4), labels = seq(0, 100, by = 10))
+title(xlab='Genomic position (Kbp)')
+title(ylab = expression(italic("G'"["ST"])))
+```
+
+
+**2)** This Manhatttan plot shouldlook a bit unusual.
+Can you think of anything that may be wrong with this analysis?
+
+
+```{r}
+table(pop)
+# Very small sample size!
+```
+
+**3)** Can you figure out how to zoom in on a particular region of a chromosome in `chromoqc()`?
+
+
+```{r}
+chromoqc(chrom, dp.alpha = 66, xlim = c(2e05, 4e05))
+```
+
+
+**4)** Can you use the function `queryMETA()` to look for other data in your file that may be of interest?
+
+```{r}
+queryMETA(vcf)
+```
+
+
+## References
+
+Danecek, Petr, Adam Auton, Goncalo Abecasis, Cornelis A Albers, Eric Banks, Mark A DePristo, Robert E Handsaker, et al. 2011. “The Variant Call Format and VCFtools.” Bioinformatics 27 (15): 2156–8. https://doi.org/10.1093/bioinformatics/btr330.
+
+Hedrick, Philip W. 2005. “A Standardized Genetic Differentiation Measure.” Evolution 59 (8): 1633–8. http://dx.doi.org/10.1111/j.0014-3820.2005.tb01814.x.
+
+Jombart, Thibaut. 2008. “adegenet: A R Package for the Multivariate Analysis of Genetic Markers.” Bioinformatics 24 (11): 1403–5. https://doi.org/10.1093/bioinformatics/btn129.
+
+Jost, Lou. 2008. “GST And Its Relatives Do Not Measure Differentiation.” Molecular Ecology 17 (18): 4015–26. http://dx.doi.org/10.1111/j.1365-294X.2008.03887.x.
+
+Kamvar, Zhian N, Jonah C Brooks, and Niklaus J Grünwald. 2015. “Novel R tools for analysis of genome-wide population genetic data with emphasis on clonality.” Name: Frontiers in Genetics 6: 208. https://doi.org/10.3389/fgene.2015.00208.
+
+Kamvar, Z N, J F Tabima, and Niklaus J Grünwald. 2014. “Poppr: An R Package for Genetic Analysis of Populations with Clonal, Partially Clonal, and/or Sexual Reproduction.” PeerJ 2: e281. https://doi.org/10.7717/peerj.281.
+
+Knaus, Brian J, and Niklaus J Grünwald. 2017. “Vcfr: A Package to Manipulate and Visualize Variant Call Format Data in R.” Molecular Ecology Resources 17 (1): 44–53. http://dx.doi.org/10.1111/1755-0998.12549.
+
+Nei, Masatoshi. 1973. “Analysis of Gene Diversity in Subdivided Populations.” Proceedings of the National Academy of Sciences 70 (12): 3321–3. http://www.pnas.org/content/70/12/3321.abstract.
+
+Simpson, Edward H. 1949. “Measurement of Diversity.” Nature 163: 688. http://dx.doi.org/10.1038/163688a0.
+
+Wright, Sewall. 1949. “The Genetical Structure of Populations.” Annals of Eugenics 15 (1): 323–54. https://doi.org/10.1111/j.1469-1809.1949.tb02451.x.
