@@ -50,6 +50,8 @@ If you are having trouble voting, or don't know if you are registered please use
 
 *[Lab11: Microbiome Analysis using Dada2](Lab11/lab11-Microbiome-Analysis-using-data2.html)
 
+*[Lab12: Network Analysis using Cytoscape and RCy3](Lab12/lab-12-Cytoscape-and-node-networks.html)
+
 Application written in R [@RCoreTeam] using the Shiny framework [@Chang2015].
 
 # REFERENCES

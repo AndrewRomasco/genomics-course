@@ -1,0 +1,41 @@
+---
+title: 'lab 12: Cytoscape and node networks'
+author: "Andrew Romasco"
+date: "11/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+## Connecting to RCy3
+
+```{r}
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+#BiocManager::install("RCy3")
+
+library(RCy3)
+cytoscapePing()
+#getwd()
+
+```
+
+## Basic Data Visualization
+
+![](C:/Users/27swi/OneDrive/Documents/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course/images/Cytoscope_yeast_img1.png)
+
+## Differentially Expressed Genes
+
+### Example 1
+
+The Query returned no search result in the String Protein Query.
+
+
+### Example 2
+
+![](C:/Users/27swi/OneDrive/Documents/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course/images/String Network - ovarian cancer ex2.png)
+
+Unable to apply a blue-red colorbrewer palette.
+
