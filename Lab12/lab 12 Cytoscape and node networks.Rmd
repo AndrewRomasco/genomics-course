@@ -2,7 +2,10 @@
 title: 'lab 12: Cytoscape and node networks'
 author: "Andrew Romasco"
 date: "11/16/2020"
-output: html_document
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
 ---
 
 ```{r setup, include=FALSE}
@@ -16,8 +19,8 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 #    install.packages("BiocManager")
 #BiocManager::install("RCy3")
 
-library(RCy3)
-cytoscapePing()
+#library(RCy3)
+#cytoscapePing()
 #getwd()
 
 ```
@@ -30,12 +33,17 @@ cytoscapePing()
 
 ### Example 1
 
-The Query returned no search result in the String Protein Query.
+![](C:/Users/27swi/OneDrive/Documents/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course/images/String Network(1).png)
+
+Who doesn't love pie charts?? Oftentimes, pie charts can be difficult for people to view and understand, but I think this looks fantastic.
+
+![](C:/Users/27swi/OneDrive/Documents/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course/images/String Network - 1(1).png)
 
 
 ### Example 2
 
-![](C:/Users/27swi/OneDrive/Documents/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course/images/String Network - ovarian cancer ex2.png)
+Look at all those pretty nodes! Look at all of that personalization! Now this is what I'm talking about!
 
-Unable to apply a blue-red colorbrewer palette.
+![](C:/Users/27swi/OneDrive/Documents/Andrew UMass Amherst Undergrad/Andrew Year 4 UMass/Fall 2020/Bio 597GE Genomics/genomics-course/images/String Network - ovarian cancer(1).png)
+
 

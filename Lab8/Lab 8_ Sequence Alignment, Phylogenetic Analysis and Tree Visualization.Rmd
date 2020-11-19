@@ -2,7 +2,10 @@
 title: 'Lab 8: Sequence Alignment, Phylogenetic Analysis and Tree Visualization'
 author: "Andrew Romasco"
 date: "10/19/2020"
-output: html_document
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
 editor_options: 
   chunk_output_type: console
 ---

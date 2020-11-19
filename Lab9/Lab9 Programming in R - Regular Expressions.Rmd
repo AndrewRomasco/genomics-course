@@ -2,7 +2,10 @@
 title: "Lab9 Programming in R - Regular Expressions"
 author: "Andrew Romasco"
 date: "10/26/2020"
-output: html_document
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
 ---
 
 ```{r setup, include=FALSE}

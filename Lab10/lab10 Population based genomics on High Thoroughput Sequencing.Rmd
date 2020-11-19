@@ -2,7 +2,10 @@
 title: 'lab10: Population based genomics on High Thoroughput Sequencing'
 author: "Andrew Romasco"
 date: "11/2/2020"
-output: html_document
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
 ---
 
 ```{r setup, include=FALSE}

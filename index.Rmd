@@ -2,9 +2,13 @@
 title: "index"
 author: "Andrew Romasco"
 date: "8/31/2020"
-output: html_document
+output:
+  prettydoc::html_pretty:
+    theme: tactile
+    highlight: github
 bibliography: data/references.bib
 ---
+
 
 
 ## Please remember to *VOTE*
